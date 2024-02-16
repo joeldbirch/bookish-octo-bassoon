@@ -1,32 +1,45 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 
-const TodoList = () => {
-  const [items, setItems] = useState(['Buy milk', 'Buy bread'])
+interface TodoListProps {
+  setTotalItems: (total: number) => void;
+}
 
-  // pretend this is a side effect that adds a new task on mount
+const TodoList: React.FC<TodoListProps> = ({ setTotalItems }) => {
+  const [items, setItems] = useState<string[]>(['Buy milk', 'Buy bread']);
+  const [inputData, setInputData] = useState<string>('');
+
   useEffect(() => {
-    setItems(['Some other task'])
-  })
+    // Simulating a side effect that adds a new task on mount
+    const taskItem = [...items, 'Some other task'];
+    setItems(taskItem);
+    setTotalItems(taskItem.length);
+  }, [setTotalItems]); // Include setTotalItems in the dependencies array
 
-  // make this work first…
   const handleClick = () => {
-    items.push('Brush teeth')
-    setItems(items)
-  }
+    if (inputData.trim() !== '') {
+      const addClickTask = [...items, inputData];
+      setItems(addClickTask);
+      setTotalItems(addClickTask.length);
+      setInputData('');
+    }
+  };
 
-  // …then allow custom tasks to be added via an input field
-  // instead of hardcoding the task in the handleClick function
+  const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setInputData(e.target.value);
+  };
 
   return (
     <div>
-      <a onClick={handleClick}>Add Task</a>
+      <input type='text' placeholder="Add a new task..." className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:border-blue-500"
+        value={inputData} onChange={handleInput} />
+      <button onClick={handleClick}>Add Task</button>
       <ul>
-        {items.map((item) => (
-          <li>{item}</li>
+        {items.map((item, index) => (
+          <li key={index}>{item}</li>
         ))}
       </ul>
     </div>
-  )
-}
+  );
+};
 
-export default TodoList
+export default TodoList;
