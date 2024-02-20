@@ -1,28 +1,40 @@
-import { useEffect, useState } from 'react'
+import React, { useRef, useCallback } from 'react'
 
-const TodoList = () => {
-  const [items, setItems] = useState(['Buy milk', 'Buy bread'])
+interface TodoListProps {
+  items: { id: string; text: string }[]
+  addTask: (taskText: string) => void
+}
 
-  // pretend this is a side effect that adds a new task on mount
-  useEffect(() => {
-    setItems(['Some other task'])
-  })
+const TodoList: React.FC<TodoListProps> = ({ items, addTask }) => {
+  const inputRef = useRef<HTMLInputElement>(null)
 
-  // make this work first…
-  const handleClick = () => {
-    items.push('Brush teeth')
-    setItems(items)
+  const sanitizeInput = useCallback((input: string): string => {
+    return input.replace(/[<>]/g, (char) => (char === '<' ? '&lt;' : '&gt;'))
+  }, [])
+
+  const handleAddTask = () => {
+    if (inputRef.current) {
+      const newTask = inputRef.current.value.trim()
+      if (newTask) {
+        addTask(sanitizeInput(newTask))
+        inputRef.current.value = '' // Clear input field
+      }
+    }
   }
 
-  // …then allow custom tasks to be added via an input field
-  // instead of hardcoding the task in the handleClick function
+  const handleEnter = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      handleAddTask()
+    }
+  }
 
   return (
     <div>
-      <a onClick={handleClick}>Add Task</a>
+      <button onClick={handleAddTask}>Add Task</button>
+      <input placeholder="new task" ref={inputRef} onKeyDown={handleEnter} />
       <ul>
         {items.map((item) => (
-          <li>{item}</li>
+          <li key={item.id}>{item.text}</li>
         ))}
       </ul>
     </div>
